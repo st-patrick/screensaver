@@ -68,6 +68,12 @@
       "https://artic-web.imgix.net/b502c5ca-bf49-4433-808b-8dd939d335c7/Hokusai_Great-Wave.jpg?rect=0%2C76%2C3600%2C2027&auto=format%2Ccompress&q=80&fit=crop&crop=faces%2Cedges%2Centropy&w=1200&h=676?w=1200&h=675&fit=crop",
       // Add more image URLs here
     ];
+	
+	// Function to get random image URL
+    function getRandomImageUrl() {
+      return imageUrls[Math.floor(Math.random() * imageUrls.length)];
+    }
+
 
     // Get container element
     const container = document.getElementById("container");
@@ -105,15 +111,24 @@
       container.style.backgroundSize = "cover";
     });
 
-    // Function to get random image URL
-    function getRandomImageUrl() {
-      return imageUrls[Math.floor(Math.random() * imageUrls.length)];
-    }
+
 
     // Function to set random image as background
     function setRandomBackground() {
-      const imageUrl = getRandomImageUrl();
-      container.style.backgroundImage = `url('${imageUrl}')`;
+	  fetch('https://collectionapi.metmuseum.org/public/collection/v1/objects?hasImages=true')
+        .then(response => response.json())
+        .then(data => {
+          const totalObjects = data.total;
+          const randomIndex = Math.floor(Math.random() * totalObjects);
+          const objectId = data.objectIDs[randomIndex];
+          return fetch(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectId}`);
+        })
+        .then(response => response.json())
+        .then(data => {
+          const imageUrl = data.primaryImage;
+          container.style.backgroundImage = `url('${imageUrl}')`;
+        })
+        .catch(error => console.error(error));      
     }
 
     // Initial call to set random background
