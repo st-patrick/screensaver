@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Random Paintings</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden; /* hide scrollbar */
+    }
+
+    #container {
+      width: 100%;
+      height: 100vh;
+      background-size: cover; /* default background size */
+      background-repeat: no-repeat;
+      background-position: center center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #fullscreenButton {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 999;
+    }
+
+    #radioContainer {
+      position: fixed;
+      top: 60px;
+      right: 20px;
+      z-index: 999;
+    }
+
+    input[type="radio"] {
+      margin-right: 5px;
+    }
+
+    @media screen and (max-width: 768px) {
+      /* Hide radio buttons in fullscreen on small screens */
+      #radioContainer {
+        display: none;
+      }
+    }
+	
+	        /* Hide inputs in fullscreen */
+         :fullscreen #radioContainer,
+         :fullscreen #fullscreenButton {
+            display: none;
+        }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <button id="fullscreenButton">Fullscreen</button>
+    <div id="radioContainer">
+      <input type="radio" id="containRadio" name="backgroundSize" checked>
+      <label for="containRadio">Contain</label>
+      <input type="radio" id="coverRadio" name="backgroundSize">
+      <label for="coverRadio">Cover</label>
+    </div>
+  </div>
+
+  <script>
+    // Array of image URLs from public domain sources
+    const imageUrls = [
+      "https://artic-web.imgix.net/b502c5ca-bf49-4433-808b-8dd939d335c7/Hokusai_Great-Wave.jpg?rect=0%2C76%2C3600%2C2027&auto=format%2Ccompress&q=80&fit=crop&crop=faces%2Cedges%2Centropy&w=1200&h=676?w=1200&h=675&fit=crop",
+      // Add more image URLs here
+    ];
+
+    // Get container element
+    const container = document.getElementById("container");
+
+    // Get fullscreen button element
+    const fullscreenButton = document.getElementById("fullscreenButton");
+
+    // Get radio buttons
+    const containRadio = document.getElementById("containRadio");
+    const coverRadio = document.getElementById("coverRadio");
+
+    // Set initial background size
+    container.style.backgroundSize = "contain";
+
+    // Add event listener to fullscreen button
+    fullscreenButton.addEventListener("click", () => {
+      if (container.requestFullscreen) {
+        container.requestFullscreen();
+      } else if (container.mozRequestFullScreen) { // Firefox
+        container.mozRequestFullScreen();
+      } else if (container.webkitRequestFullscreen) { // Chrome, Safari and Opera
+        container.webkitRequestFullscreen();
+      } else if (container.msRequestFullscreen) { // IE/Edge
+        container.msRequestFullscreen();
+      }
+    });
+
+    // Add event listener to contain radio button
+    containRadio.addEventListener("change", () => {
+      container.style.backgroundSize = "contain";
+    });
+
+    // Add event listener to cover radio button
+    coverRadio.addEventListener("change", () => {
+      container.style.backgroundSize = "cover";
+    });
+
+    // Function to get random image URL
+    function getRandomImageUrl() {
+      return imageUrls[Math.floor(Math.random() * imageUrls.length)];
+    }
+
+    // Function to set random image as background
+    function setRandomBackground() {
+      const imageUrl = getRandomImageUrl();
+      container.style.backgroundImage = `url('${imageUrl}')`;
+    }
+
+    // Initial call to set random background
+    setRandomBackground();
+  </script>
+</body>
+</html>
