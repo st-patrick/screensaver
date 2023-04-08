@@ -63,6 +63,13 @@
   </div>
 
   <script>
+  
+	// TODO
+	// add a simple "like" button that'll push to storage this URL and ... idk. Just store it for now
+	// and also allow "dislike" to store it and... skip next time or so
+	// actually might as well manually scan the whole catalogue for objects without image
+	// or actually just build my own better API on top of this one, which updates the catalogue.. once every day or so and builds metadata from it
+
     // Array of image URLs from public domain sources
     const imageUrls = [
       "https://artic-web.imgix.net/b502c5ca-bf49-4433-808b-8dd939d335c7/Hokusai_Great-Wave.jpg?rect=0%2C76%2C3600%2C2027&auto=format%2Ccompress&q=80&fit=crop&crop=faces%2Cedges%2Centropy&w=1200&h=676?w=1200&h=675&fit=crop",
@@ -110,29 +117,42 @@
     coverRadio.addEventListener("change", () => {
       container.style.backgroundSize = "cover";
     });
+	
 
+	function fetchCollectionAndImage() {
+		fetch('https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&medium=Paintings&q=e')
+		.then(response => response.json())
+		.then(catalogue => {
+		  fetchRandomImage(catalogue);
+		})
+		.catch(error => console.error(error));
+	}
 
-
-    // Function to set random image as background
-    function setRandomBackground() {
-	  fetch('https://collectionapi.metmuseum.org/public/collection/v1/objects?hasImages=true')
-        .then(response => response.json())
-        .then(data => {
-          const totalObjects = data.total;
-          const randomIndex = Math.floor(Math.random() * totalObjects);
-          const objectId = data.objectIDs[randomIndex];
-          return fetch(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectId}`);
-        })
-        .then(response => response.json())
-        .then(data => {
-          const imageUrl = data.primaryImage;
-          container.style.backgroundImage = `url('${imageUrl}')`;
-        })
-        .catch(error => console.error(error));      
-    }
+	
+	function fetchRandomImage(catalogue) {
+		const totalObjects = catalogue.total;
+		const randomIndex = Math.floor(Math.random() * totalObjects);
+		const objectId = catalogue.objectIDs[randomIndex];
+		fetch(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectId}`)
+		.then(response => response.json())
+		.then(data => {
+		  const imageUrl = data.primaryImage;
+		  if (imageUrl) {
+			container.style.backgroundImage = `url('${imageUrl}')`;
+		  } else {
+			// If selected object has no image, fetch another random image
+			fetchRandomImage(catalogue);
+		  }
+		})
+		.catch(error => console.error(error));
+	}
 
     // Initial call to set random background
-    setRandomBackground();
+	fetchCollectionAndImage();
+	
+	
+	
+	
   </script>
 </body>
 </html>
