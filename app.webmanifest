@@ -1,0 +1,8 @@
+{
+  "name": "Patrick's Amazing Screensaver",
+  "short_name": "screensaver",
+  "display": "standalone",
+  "orientation": "portrait",
+  "start_url": "https://screensaver.patrickreinbold.com",
+  "scope": "https://screensaver.patrickreinbold.com"
+}

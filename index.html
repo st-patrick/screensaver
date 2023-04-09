@@ -2,22 +2,58 @@
 <html>
 <head>
   <title>Random Paintings</title>
+  
+	<!-- Required meta tags -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<meta name="theme-color" content="lightgoldenrodyellow">
+	<meta name="theme-color" content="lightgoldenrodyellow" media="(prefers-color-scheme: light)">
+	<meta name="theme-color" content="lightgoldenrodyellow" media="(prefers-color-scheme: dark)">
+
+	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<meta name="viewport" content="minimal-ui">
+	<meta name="viewport" content="initial-scale=1"> 
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> 
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<link rel="manifest" href="/app.webmanifest">
+  
   <style>
     body {
       margin: 0;
-      overflow: hidden; /* hide scrollbar */
     }
 
     #container {
-      width: 100%;
-      height: 100vh;
+	  height: 100vh;
+	  width: 100vw;
       background-size: cover; /* default background size */
       background-repeat: no-repeat;
       background-position: center center;
       display: flex;
       justify-content: center;
       align-items: center;
+	  overflow: hidden; /* hide scrollbar */
     }
+	
+	
+	@supports (-webkit-touch-callout: none) { /* aaall the hacky ways to get fuckin iOS working */
+	
+		@media screen and (orientation:portrait) { 
+			#container {
+				height: 106vh;
+				padding-top: -6vh; /* and not margin */
+			}	
+		}
+	
+		@media screen and (orientation:landscape) { 
+			#container {
+				width: 112vw;
+				padding-left: -6vw;
+				padding-right: -6vw;
+			}	
+		}
+	}
 
     #fullscreenButton {
       position: fixed;
@@ -37,31 +73,34 @@
       margin-right: 5px;
     }
 
-    @media screen and (max-width: 768px) {
+    @media screen and (max-width: 1024px) {
       /* Hide radio buttons in fullscreen on small screens */
-      #radioContainer {
+      #radioContainer, #fullscreenButton{
         display: none;
       }
     }
 	
-	        /* Hide inputs in fullscreen */
-         :fullscreen #radioContainer,
-         :fullscreen #fullscreenButton {
-            display: none;
-        }
+	/* Hide inputs in fullscreen */
+	:fullscreen #radioContainer,
+	:fullscreen #fullscreenButton ,
+	:-webkit-full-screen #radioContainer,
+	:-webkit-full-screen #fullscreenButton {
+		display: none;
+	}
   </style>
 </head>
 <body>
+
   <div id="container">
     <button id="fullscreenButton">Fullscreen</button>
     <div id="radioContainer">
-      <input type="radio" id="containRadio" name="backgroundSize" checked>
+      <input type="radio" id="containRadio" name="backgroundSize">
       <label for="containRadio">Contain</label>
-      <input type="radio" id="coverRadio" name="backgroundSize">
+      <input type="radio" id="coverRadio" name="backgroundSize" checked>
       <label for="coverRadio">Cover</label>
     </div>
   </div>
-
+  
   <script>
   
 	// TODO
@@ -69,6 +108,14 @@
 	// and also allow "dislike" to store it and... skip next time or so
 	// actually might as well manually scan the whole catalogue for objects without image
 	// or actually just build my own better API on top of this one, which updates the catalogue.. once every day or so and builds metadata from it
+	// scan / catalogue landscape format ones manually, etc...
+	// make it a fullscreen pwa for mobile
+	// I do very much want it to be scrollable, so that you can choose the excerpt you see in cover mode
+	// strongly prefer loading landscape format artwork in landscape and vice versa
+	// hide images behind my own API cause that's def the unique work, collecting and curating them
+	// although the best product would probably be the actual screen saver and themes etc... 
+	// test on all available devices and formats: android, windows, ios, ipados x landcape, portrait x in-browser, as pwa
+	// history of "last displayed" with artist and name.... so you can go back and find out more
 
     // Array of image URLs from public domain sources
     const imageUrls = [
@@ -97,6 +144,11 @@
 
     // Add event listener to fullscreen button
     fullscreenButton.addEventListener("click", () => {
+	
+		fullscreenButton.style.zIndex = -1;
+		coverRadio.style.zIndex = -1;
+		containRadio.style.zIndex = -1;
+	
       if (container.requestFullscreen) {
         container.requestFullscreen();
       } else if (container.mozRequestFullScreen) { // Firefox
@@ -106,7 +158,25 @@
       } else if (container.msRequestFullscreen) { // IE/Edge
         container.msRequestFullscreen();
       }
+	 
     });
+	
+	addEventListener("fullscreenchange", (event) => {
+		  // document.fullscreenElement will point to the element that
+		  // is in fullscreen mode if there is one. If not, the value
+		  // of the property is null.
+		  if (document.fullscreenElement) {
+			console.log(
+			  `Element: ${document.fullscreenElement.id} entered fullscreen mode.`
+			);
+		  } else {
+			console.log("Leaving fullscreen mode.");
+					fullscreenButton.style.zIndex = 999;
+		coverRadio.style.zIndex = 999;
+		containRadio.style.zIndex = 999;
+		  }
+	});
+	
 
     // Add event listener to contain radio button
     containRadio.addEventListener("change", () => {
@@ -139,6 +209,7 @@
 		  const imageUrl = data.primaryImage;
 		  if (imageUrl) {
 			container.style.backgroundImage = `url('${imageUrl}')`;
+			container.style.backgroundSize = "cover";
 		  } else {
 			// If selected object has no image, fetch another random image
 			fetchRandomImage(catalogue);
@@ -151,8 +222,19 @@
 	fetchCollectionAndImage();
 	
 	
-	
-	
+	window.scrollBy({
+  top: 200,
+  left: 200,
+  behavior: 'smooth' // optional, smooth scrolling effect
+});
+
+// Get the dimensions of the visual viewport
+const viewportWidth = window.visualViewport.width;
+const viewportHeight = window.visualViewport.height;
+
+// Calculate the height of the status bar
+const statusBarHeight = window.innerHeight - viewportHeight;
+
   </script>
 </body>
 </html>
